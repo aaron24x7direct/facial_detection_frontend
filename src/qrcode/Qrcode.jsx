@@ -7,7 +7,7 @@ import { FaArrowLeft } from 'react-icons/fa';
 const Qrcode = () => {
     const token = localStorage.getItem('token');
     const navigate = useNavigate();
-
+    
     if (!token) {
         return (
             <div className="container mt-5 text-center">
@@ -27,8 +27,11 @@ const Qrcode = () => {
         );
     }
 
-    const value = decoded?.sub || 'No sub in token';
-
+    
+    const value = String(decoded?.id || 'No sub in token');
+    //make the decoded?.id string
+    console.log(value);
+    
     return (
         <div className="container mt-5">
             <div className="mb-4">
