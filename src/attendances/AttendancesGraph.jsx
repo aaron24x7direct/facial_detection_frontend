@@ -1,11 +1,18 @@
 import React, { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import {
+    LineChart,
+    Line,
+    XAxis,
+    YAxis,
+    CartesianGrid,
+    Tooltip,
+    ResponsiveContainer
+} from 'recharts';
 import { subDays, subMonths, subYears, isAfter } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
 import { FaArrowLeft } from 'react-icons/fa';
 
-// ✅ NEW: Required packages for Excel export
 import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
 import * as htmlToImage from 'html-to-image';
@@ -15,7 +22,7 @@ const AttendancesGraph = () => {
     const [data, setData] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const chartRef = useRef(null); // ✅ NEW: Reference for chart DOM
+    const chartRef = useRef(null);
     const navigate = useNavigate();
     const navigate_path = location.pathname;
 
@@ -61,7 +68,6 @@ const AttendancesGraph = () => {
 
     const filtered = filterByRange();
 
-    // ✅ NEW: Export to Excel with embedded image
     const exportToExcel = async () => {
         try {
             const chartNode = chartRef.current;
@@ -73,14 +79,20 @@ const AttendancesGraph = () => {
             const dataSheet = workbook.addWorksheet('Attendances');
             const graphSheet = workbook.addWorksheet('Graph');
 
-            // Add data
+            // ✅ UPDATED: Include Late and Present columns
             dataSheet.columns = [
                 { header: 'Date', key: 'date', width: 20 },
-                { header: 'Count', key: 'count', width: 10 },
+                { header: 'Late', key: 'Late', width: 10 },
+                { header: 'Present', key: 'Present', width: 10 },
             ];
-            dataSheet.addRows(filtered.map(item => ({ date: item.date, count: item.count })));
+            dataSheet.addRows(
+                filtered.map(item => ({
+                    date: item.date,
+                    Late: item.Late ?? 0,
+                    Present: item.Present ?? 0,
+                }))
+            );
 
-            // Add chart image
             const imageId = workbook.addImage({
                 buffer: arrayBuffer,
                 extension: 'png',
@@ -112,7 +124,9 @@ const AttendancesGraph = () => {
                 </button>
             </div>
 
-            <h2 className="mb-4">{`${navigate_path === '/my-attendances' ? 'My Attendances Graph' : navigate_path === '/overall-attendances' ? 'Overall Attendances Graph' : 'Section Attendances Graph'}`}</h2>
+            <h2 className="mb-4">
+                {`${navigate_path === '/my-attendances/graph' ? 'My Attendances Graph' : navigate_path === '/overall-attendances/graph' ? 'Overall Attendances Graph' : 'Section Attendances Graph'}`}
+            </h2>
 
             <div className="mb-3 d-flex align-items-center">
                 <div className="me-3">
@@ -120,11 +134,9 @@ const AttendancesGraph = () => {
                     <button className={`btn btn-sm me-2 ${range === '1m' ? 'btn-primary' : 'btn-outline-primary'}`} onClick={() => setRange('1m')}>1 Month</button>
                     <button className={`btn btn-sm me-3 ${range === '1y' ? 'btn-primary' : 'btn-outline-primary'}`} onClick={() => setRange('1y')}>1 Year</button>
                 </div>
-                {/* ✅ NEW: Excel button */}
                 <button className="btn btn-success btn-sm" onClick={exportToExcel}>Export to Excel</button>
             </div>
 
-            {/* ✅ Wrap chart in ref for image capture */}
             <div ref={chartRef} style={{ background: '#fff', padding: '1rem' }}>
                 <ResponsiveContainer width="100%" height={400}>
                     <LineChart data={filtered}>
@@ -132,7 +144,9 @@ const AttendancesGraph = () => {
                         <XAxis dataKey="date" />
                         <YAxis allowDecimals={false} />
                         <Tooltip />
-                        <Line type="monotone" dataKey="count" stroke="#8884d8" activeDot={{ r: 8 }} />
+                        {/* ✅ UPDATED: Show both Late and Present lines */}
+                        <Line type="monotone" dataKey="Late" stroke="#ff4d4f" name="Late" activeDot={{ r: 8 }} />
+                        <Line type="monotone" dataKey="Present" stroke="#52c41a" name="Present" activeDot={{ r: 8 }} />
                     </LineChart>
                 </ResponsiveContainer>
             </div>

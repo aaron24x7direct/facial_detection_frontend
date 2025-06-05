@@ -10,6 +10,7 @@ import ChangeAccountDetails from './account/ChangeAccountDetails';
 import ChangePassword from './account/ChangePassword';
 import FacialDetectionUserImages from './account/FacialDetectionUserImages';
 import AttendancesGraph from './attendances/AttendancesGraph';
+import SectionAttendancesGraph from './attendances/SectionAttendancesGraph';
 import Qrcode from './qrcode/Qrcode';
 import CreateAccount from './authentication/CreateAccount';
 import 'bootstrap/dist/css/bootstrap.min.css';
@@ -82,7 +83,7 @@ function App() {
         />
         <Route 
           path="/section-attendances/graph" 
-          element={token ? <AttendancesGraph /> : <Navigate to="/" replace />} 
+          element={token ? <SectionAttendancesGraph /> : <Navigate to="/" replace />} 
         />
         <Route 
           path="/qrcode" 
